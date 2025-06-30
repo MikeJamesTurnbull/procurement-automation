@@ -1,0 +1,35 @@
+{
+  "name": "procurement-automation-app",
+  "version": "1.0.0",
+  "description": "Internal procurement automation web application",
+  "private": true,
+  "workspaces": [
+    "src",
+    "api",
+    "mcp-server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:api\" \"npm run dev:db\"",
+    "dev:frontend": "cd src && npm run dev",
+    "dev:api": "cd api && npm run start",
+    "dev:db": "docker-compose up -d",
+    "build": "npm run build:frontend && npm run build:api",
+    "build:frontend": "cd src && npm run build",
+    "build:api": "cd api && npm run build",
+    "test": "npm run test:frontend && npm run test:api",
+    "test:frontend": "cd src && npm run test",
+    "test:api": "cd api && npm run test",
+    "db:setup": "cd database && docker-compose up -d && npm run db:migrate",
+    "db:migrate": "cd api && npx prisma migrate dev",
+    "db:studio": "cd api && npx prisma studio",
+    "db:reset": "cd api && npx prisma migrate reset",
+    "mcp:dev": "cd mcp-server && npm run dev",
+    "install:all": "cd src && npm install && cd ../api && npm install && cd ../mcp-server && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

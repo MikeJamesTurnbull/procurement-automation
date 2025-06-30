@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  entraId    String   @unique @map("entra_id")
+  email      String   @unique
+  name       String
+  department String
+  role       UserRole
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  requests         ProcurementRequest[]
+  approvals        ApprovalStep[]
+  auditLogs        AuditLog[]
+
+  @@map("users")
+}
+
+model ProcurementRequest {
+  id          String            @id @default(cuid())
+  userId      String            @map("user_id")
+  title       String
+  description String
+  amount      Decimal           @db.Decimal(12, 2)
+  status      RequestStatus
+  categoryId  String            @map("category_id")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  user         User           @relation(fields: [userId], references: [id])
+  category     Category       @relation(fields: [categoryId], references: [id])
+  approvals    ApprovalStep[]
+  attachments  Attachment[]
+  auditLogs    AuditLog[]
+
+  @@map("procurement_requests")
+}
+
+model ApprovalStep {
+  id         String        @id @default(cuid())
+  requestId  String        @map("request_id")
+  approverId String        @map("approver_id")
+  stepOrder  Int           @map("step_order")
+  status     ApprovalStatus
+  approvedAt DateTime?     @map("approved_at")
+  comments   String?
+  createdAt  DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  request  ProcurementRequest @relation(fields: [requestId], references: [id])
+  approver User              @relation(fields: [approverId], references: [id])
+
+  @@unique([requestId, stepOrder])
+  @@map("approval_steps")
+}
+
+model ApprovalTemplate {
+  id        String   @id @default(cuid())
+  name      String
+  maxAmount Decimal  @db.Decimal(12, 2) @map("max_amount")
+  stepsConfig Json   @map("steps_config")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  categories Category[]
+
+  @@map("approval_templates")
+}
+
+model Category {
+  id                String            @id @default(cuid())
+  name              String
+  approvalTemplateId String           @map("approval_template_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+
+  // Relations
+  approvalTemplate ApprovalTemplate    @relation(fields: [approvalTemplateId], references: [id])
+  requests         ProcurementRequest[]
+
+  @@map("categories")
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  requestId String   @map("request_id")
+  filename  String
+  blobUrl   String   @map("blob_url")
+  fileSize  Int      @map("file_size")
+  mimeType  String   @map("mime_type")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  request ProcurementRequest @relation(fields: [requestId], references: [id])
+
+  @@map("attachments")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  requestId String   @map("request_id")
+  userId    String   @map("user_id")
+  action    String
+  details   Json?
+  timestamp DateTime @default(now())
+
+  // Relations
+  request ProcurementRequest @relation(fields: [requestId], references: [id])
+  user    User              @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// Enums
+enum UserRole {
+  USER
+  APPROVER
+  ADMINISTRATOR
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
