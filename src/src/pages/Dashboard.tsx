@@ -5,12 +5,6 @@ import {
   Button,
   Badge,
   tokens,
-  Table,
-  TableHeader,
-  TableHeaderCell,
-  TableBody,
-  TableRow,
-  TableCell,
 } from '@fluentui/react-components'
 import { Add24Regular } from '@fluentui/react-icons'
 import { useNavigate } from 'react-router-dom'

@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import { useIsAuthenticated } from '@azure/msal-react'
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react'
 import Layout from './components/Layout'
 import Login from './pages/Login'
@@ -9,8 +8,6 @@ import RequestDetails from './pages/RequestDetails'
 import AdminDashboard from './pages/AdminDashboard'
 
 function App() {
-  const isAuthenticated = useIsAuthenticated()
-
   return (
     <>
       <AuthenticatedTemplate>
